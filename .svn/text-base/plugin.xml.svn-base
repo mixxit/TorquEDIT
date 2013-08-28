@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="TorquEDIT"
+   name="TorquEDIT Plug-in"
+   version="0.4"
+   provider-name="Krux Games, LLC and J. Alan Atherton"
+   class="torquedit.tseditor.TorquEDITPlugin">
+
+   <runtime>
+      <library name="TorquEDIT.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.core.filesystem"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.debug.ui"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="torquedit.tseditor.TorqueScriptEditor"
+            icon="src/torquedit/tseditor/resources/torque16.gif"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            name="Torque Script Editor"
+            id="torquedit.tseditor.TorqueScriptEditor"
+            extensions="cs, mis, gui, t2d">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="torquedit.preferences.TorquEDITPreferencePage"
+            id="torquedit.preferences.TorquEDITPreferencePage"
+            name="TorquEDIT"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="torquedit.preferences.PreferenceInitializer"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="TorqueEDIT"
+            name="Tree"/>
+   </extension>
+   <extension
+         id="TSNature"
+         name="Torque project nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run class="torquedit.tseditor.TSProjectNature"/>
+      </runtime>
+      <builder id="TorquEDIT.builder"/>
+   </extension>
+   <extension
+         id="builder"
+         name="Torque Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder hasNature="true">
+         <run class="torquedit.tseditor.TSBuilder"/>
+      </builder>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="torquedit.tseditor.torqueCategory"
+            name="Torque Project"/>
+      <wizard
+            category="torquedit.tseditor.torqueCategory"
+            class="torquedit.tseditor.TSNewProjectWizard"
+            icon="src/torquedit/tseditor/resources/torque20.png"
+            id="torquedit.tseditor.torqueProjectWizard"
+            name="Torque Project"
+            project="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.projectNatureImages">
+      <image
+            icon="src/torquedit/tseditor/resources/torque.gif"
+            id="TorquEDIT.projectImage"
+            natureId="TorquEDIT.TSNature"/>
+   </extension>
+   <extension
+         id="dsofilter"
+         name="DSO Filter"
+         point="org.eclipse.ui.ide.resourceFilters">
+      <filter
+            pattern="*.dso"
+            selected="true"/>
+   </extension>
+   <extension
+         id="taskmarker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.taskmarker"/>
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="torquedit.tseditor.TSLaunchConfigurationDelegate"
+            id="TorquEDIT.TSLaunchConfigurationType"
+            modes="run, debug"
+            name="Torque App">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="torquedit.tseditor.TSLaunchConfigurationTabGroup"
+            id="TorquEDIT.TSTabGroup"
+            type="TorquEDIT.TSLaunchConfigurationType"/>
+   </extension>
+
+</plugin>

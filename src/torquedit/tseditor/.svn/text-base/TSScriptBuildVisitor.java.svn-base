@@ -1,0 +1,629 @@
+
+package torquedit.tseditor;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.util.Stack;
+
+import org.eclipse.core.internal.resources.File;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+class TSScriptBuildVisitor implements IResourceVisitor {
+
+	private IProgressMonitor monitor;
+
+	private Document doc;
+
+	private Element docRoot;
+
+	public TSScriptBuildVisitor(IProgressMonitor progMonitor, Document docVar,
+			Element rootVar) {
+		doc = docVar;
+		docRoot = rootVar;
+		monitor = progMonitor;
+	}
+
+	public boolean visit(IResource res) {
+		// build the specified resource.
+		// return true to continue visiting children.
+		if (res instanceof File) {
+			try {
+				((IFile) res).deleteMarkers("TorquEDIT.taskmarker", true,
+						IResource.DEPTH_INFINITE);
+			} catch (CoreException e) {
+				// something went wrong
+			}
+
+			String filename = res.getFullPath().toString();
+			if (filename.endsWith(".cs") || filename.endsWith(".gui")
+					|| filename.endsWith(".t2d") || filename.endsWith(".mis")) {
+				try {
+
+					String line = res.getLocation().toOSString();
+					FileReader reader = new FileReader(line);
+					BufferedReader in = new BufferedReader(reader);
+					StreamTokenizer token = new StreamTokenizer(in);
+
+					token.slashStarComments(true);
+					token.eolIsSignificant(true);
+					token.parseNumbers();
+					token.quoteChar('"');
+					token.ordinaryChar('.');
+					token.ordinaryChar('/');
+					// token.ordinaryChar('@');
+					String str;
+					Stack stack = new Stack();
+					String state = new String("normal");
+					Element workingClass = null;
+					Element workingGlobal = null;
+					Element lastVariable = null;
+					Element newVariable = null;
+					
+					int lineNum = 1;
+					double num;
+					boolean inMethod = false;
+					boolean inFunction = false;
+					boolean firstParameter = false;
+					boolean watchForBrace = false;
+					boolean defineVariableClass = false;
+
+					int prevTokType = StreamTokenizer.TT_EOF;					
+					String prevTokenString = "";
+					
+					int tokType = token.nextToken();
+					while (tokType != StreamTokenizer.TT_EOF) {
+						switch (tokType) {
+						case StreamTokenizer.TT_WORD:
+							str = token.sval;
+							if (str.equals("if")) {
+								Element iffy = doc.createElement("if");
+								stack.push(iffy);
+								watchForBrace = true;
+							}
+							else if (str.equals("else")) {
+								Element iffy = doc.createElement("else");
+								stack.push(iffy);
+								watchForBrace = true;
+							}
+							else if (str.equals("new")) {
+								// TODO : parse class member fields (dynamic only if possible)
+								tokType = token.nextToken();								
+								Element iffy = doc.createElement("new");
+								iffy.setAttribute("class", token.sval);
+								stack.push(iffy);
+								
+								if(lastVariable != null && prevTokType == '=') {
+									addParent(lastVariable, token.sval);
+									newVariable = lastVariable;
+								}
+								tokType = token.nextToken();
+								if(tokType == '(') {
+									tokType = token.nextToken();
+									if (tokType == StreamTokenizer.TT_WORD || tokType == '"') {
+										Element newGlobal = addGlobal(token.sval);
+										newGlobal.setAttribute("line", Integer.toString(lineNum));
+										newGlobal.setAttribute("file", filename);
+										addParent(newGlobal, iffy.getAttribute("class"));
+										workingGlobal = newGlobal;
+									}
+								}
+								watchForBrace = true;
+								
+								
+							}
+							else if(str.equals("class") || str.equals("superclass")) {
+								tokType = token.nextToken();
+								if (tokType == '=') {
+									tokType = token.nextToken();
+									if (tokType == StreamTokenizer.TT_WORD || tokType == '"') {
+										
+										workingClass = addClass(token.sval);
+										Element owner = (Element)stack.peek();
+										if(!owner.getAttribute("class").equals("")) {
+											addParent(workingClass, owner.getAttribute("class"));
+											
+										}
+										if(workingGlobal != null) {
+											
+											addParent(workingGlobal, token.sval);
+										}
+										if(newVariable != null) {
+											addParent(newVariable, token.sval);
+										}
+										
+									}
+								}
+							}
+							else if (str.equals("package")) {
+								Element iffy = doc.createElement("package");
+								stack.push(iffy);
+							}
+
+							else if (str.equals("function")) {
+
+								tokType = token.nextToken();
+								String className = token.sval;
+								tokType = token.nextToken();
+								if (tokType == ':') {
+									tokType = token.nextToken();
+									tokType = token.nextToken();
+
+									Element classNode = addClass(className);
+									
+									Element funcNode = doc.createElement("method");
+									funcNode.setAttribute("name", token.sval);
+									funcNode.setAttribute("file", filename);
+									funcNode.setAttribute("startLine", Integer.toString(lineNum));
+									classNode.appendChild(funcNode);
+									stack.push(funcNode);
+									state = "parameters";
+									inMethod = true;
+									firstParameter = true;
+								} else {
+									Element funcNode = doc.createElement("function");
+									funcNode.setAttribute("name", className);
+									funcNode.setAttribute("startLine", Integer.toString(lineNum));
+									funcNode.setAttribute("file", filename);
+									docRoot.appendChild(funcNode);
+									stack.push(funcNode);
+									state = "parameters";
+									inFunction = true;
+								}
+
+							}
+							
+//							else {
+//								if(!stack.empty()) {
+//									Element owner = (Element)stack.peek();
+//
+//									if(owner.getNodeName().equals("new")) {
+//										String fieldName = token.sval;
+//										tokType = token.nextToken();
+//										if(tokType == '=') {
+//											
+//											tokType = token.nextToken();
+//											if(workingClass != null) {
+//													addField(workingClass, fieldName);
+//											}
+//										}
+//									}
+//								}
+//							}
+							
+							
+							break;
+						case StreamTokenizer.TT_NUMBER:
+							num = token.nval;
+							break;
+						case StreamTokenizer.TT_EOL:
+							lineNum++;
+							break;
+						case ';':
+							
+							
+							if (watchForBrace) {
+								watchForBrace = false;
+								if (!stack.empty()) {
+									Element e = (Element)stack.pop();
+									if(e.getNodeName().equals("new")) {
+										workingGlobal = null;
+										newVariable = null;
+									}
+								}
+							}
+							
+							if (!stack.empty()) {
+								Element e = (Element)stack.peek();
+								if(!e.getNodeName().equals("new")) {
+									newVariable = null;
+								}
+							}
+							lastVariable = null;
+							
+							break;
+						case '(':
+							str = "(";
+							break;
+						case ')':
+							str = ")";
+							if (state.equals("parameters")) {
+								state = "normal";
+							}
+							break;
+						case '$':
+							tokType = token.nextToken();
+
+							if (tokType == StreamTokenizer.TT_WORD) {
+								str = "$" + token.sval;
+								Element globalNode = addGlobal( str);
+								lastVariable = globalNode;
+								
+								Element receiverNode = null;
+								if (defineVariableClass) {
+									tokType = token.nextToken();
+									while(tokType == '.' || tokType == ':') {
+										if(tokType == ':') {
+											str = str + ':';
+											tokType = token.nextToken();
+											if(tokType == ':') {
+												str = str + ':';
+												tokType = token.nextToken();
+											}
+											
+										}
+										if(tokType == '.') {
+											
+											str = str + '.';
+											tokType = token.nextToken();
+										}
+										String fieldName = token.sval;
+										str = str + token.sval;
+
+										
+										NodeList parents = lastVariable.getChildNodes();
+										Element par;
+										for(int x=0; x < parents.getLength(); x++) {
+											par = (Element)parents.item(x);
+											if(par.getNodeName().equals("parent")) {
+												String parName = par.getAttribute("parentname");
+												lastVariable = findElementByAttribute(docRoot, "class", "name", parName);
+												if(lastVariable != null) {
+													receiverNode = addField(lastVariable, fieldName);
+												}
+											}
+										}
+										
+										tokType = token.nextToken();
+									}
+									
+									lastVariable = null;
+								}
+								
+								if(receiverNode == null) {
+									receiverNode = globalNode;
+									lastVariable = globalNode;
+								}
+								if(defineVariableClass) {
+									addParent(receiverNode, token.sval);
+									defineVariableClass = false;
+								}
+								receiverNode.setAttribute("line", Integer.toString(lineNum));
+								receiverNode.setAttribute("file", filename);
+
+							}
+							break;
+						case '"':
+							str = token.sval;
+							break;
+						case '=':
+							// TODO : handle assignment to local variable
+							// (assign class type)
+							str = "=";
+							break;
+						case '{':
+							str = "{";
+							watchForBrace = false;
+							break;
+						case '}':
+							str = "}";
+							if (!stack.empty()) {
+								Element node = (Element) stack.pop();
+								node.setAttribute("endLine", Integer
+										.toString(lineNum));
+								if (node.getNodeName().equals("method")) {
+									inMethod = false;
+								}
+								if (node.getNodeName().equals("function")) {
+									inFunction = false;
+								}
+								if(node.getNodeName().equals("new")) {
+									workingGlobal = null;
+									workingClass = null;
+								}
+							}
+
+							break;
+						case ':':
+							str = ":";
+							break;
+						case '%':
+							tokType = token.nextToken();
+							if (tokType == StreamTokenizer.TT_WORD) {
+								String name = "%" + token.sval;
+								if(token.sval.equals("second")) {
+									String breakHere = "true";
+								}
+								
+								if (!stack.empty()) {
+									Element node = (Element) stack.peek();
+									Element var;
+
+									var = findElementByName(node, "local", name);
+
+									if (var == null) {
+										var = doc.createElement("local");
+										var.setAttribute("name", name);
+										// var.setAttribute("file", filename);
+										if (state.equals("parameters")) {
+											var.setAttribute("parameter","true");
+											Element par = (Element) node.getParentNode();
+											if (firstParameter && par != null) {
+												//var.setAttribute("class", par.getAttribute("name"));
+												addParent(var, par.getAttribute("name"));
+												
+												firstParameter = false;
+											}
+										}
+										node.appendChild(var);
+
+									}
+
+									Element receiverNode = null;
+									if (defineVariableClass) {
+										tokType = token.nextToken();
+										while(tokType == '.') {
+											tokType = token.nextToken();
+											String fieldName = token.sval;
+											//str = str + token.sval;
+
+											NodeList parents = lastVariable.getChildNodes();
+											Element par;
+											for(int x=0; x < parents.getLength(); x++) {
+												par = (Element)parents.item(x);
+												if(par.getNodeName().equals("parent")) {
+													String parName = par.getAttribute("parentname");
+													lastVariable = findElementByAttribute(docRoot, "class", "name", parName);
+													if(lastVariable != null) {
+														receiverNode = addField(lastVariable, fieldName);
+													}
+												}
+											}
+											
+											tokType = token.nextToken();
+										}
+										
+										
+										lastVariable = null;
+									}
+									
+									if(receiverNode == null) {
+										receiverNode = var;
+										lastVariable = var;
+									}
+									if(defineVariableClass) {
+										addParent(receiverNode, token.sval);
+										defineVariableClass = false;
+									}
+									receiverNode.setAttribute("line", Integer.toString(lineNum));
+									receiverNode.setAttribute("file", filename);
+									
+								}
+							} else {
+								continue;
+							}
+							break;
+						case '.':
+							if(lastVariable != null) {
+								tokType = token.nextToken();
+								if(tokType == StreamTokenizer.TT_WORD) {
+									String fieldName = token.sval;
+									tokType = token.nextToken();
+									if(tokType != '(') {
+										NodeList parents = lastVariable.getChildNodes();
+										Element par;
+										for(int x=0; x < parents.getLength(); x++) {
+											par = (Element)parents.item(x);
+											if(par.getNodeName().equals("parent")) {
+												String parName = par.getAttribute("parentname");
+												Element classNode = findElementByAttribute(docRoot, "class", "name", parName);
+												if(classNode != null) {
+													lastVariable = addField(classNode, fieldName);
+												}
+											}
+										}
+									}
+								}
+							}
+							break;
+						case '&':
+							str = "&";
+							break;
+						case '/':
+							tokType = token.nextToken();
+							if (tokType == '/') {
+								tokType = token.nextToken();
+								if (tokType == '#') {
+									defineVariableClass = true;
+								} 
+								else if (tokType == StreamTokenizer.TT_WORD) {
+									if (token.sval.toLowerCase().startsWith("todo")) {
+										try {
+											IMarker marker = ((IFile) res).createMarker("TorquEDIT.taskmarker");
+
+											if(token.sval.endsWith("1")) {
+													marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+											}
+											if(token.sval.endsWith("2")) {
+													marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_NORMAL);
+											}
+											if(token.sval.endsWith("3")) {
+													marker.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_LOW);
+											}												
+											token.wordChars(' ', '~');
+											token.whitespaceChars(0, 0);
+
+											tokType = token.nextToken();
+
+											marker.setAttribute(IMarker.MESSAGE,token.sval);
+											marker.setAttribute(IMarker.LINE_NUMBER,lineNum);
+											marker.setAttribute(IMarker.USER_EDITABLE, false);
+
+											// token.resetSyntax();
+											token = new StreamTokenizer(in);
+											token.slashStarComments(true);
+											token.eolIsSignificant(true);
+											token.parseNumbers();
+											token.quoteChar('"');
+											token.ordinaryChar('.');
+											token.ordinaryChar('/');
+
+										} catch (CoreException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}
+									else {
+										while (tokType != StreamTokenizer.TT_EOL
+												&& tokType != StreamTokenizer.TT_EOF) {
+											tokType = token.nextToken();
+										}
+										lineNum++;
+									}
+									
+								} 
+								else {
+									while (tokType != StreamTokenizer.TT_EOL
+											&& tokType != StreamTokenizer.TT_EOF) {
+										tokType = token.nextToken();
+									}
+									lineNum++;
+								}
+							} else {
+								continue;
+							}
+							break;
+						default:
+							Character c = new Character((char) tokType);
+							str = c.toString();
+							break;
+						}
+						prevTokType = tokType;
+						prevTokenString = token.sval;
+						tokType = token.nextToken();
+					}
+
+					// IFile indexFile = root.getFile(indexPath);
+					// InputStream indexIS = new StringBufferInputStream(out);
+					// indexFile.create(indexIS,false,new
+					// SubProgressMonitor(monitor,10));
+
+				} catch (IOException ioe) {
+					// I/O error
+					ioe.printStackTrace();
+				}
+
+			}
+
+		}
+		return true;
+	}
+
+	
+	public Element findElementByAttribute(Element base, String type, String attribute, String name) {
+		if(base == null) {
+			return null;
+		}
+		NodeList classes;
+		classes = base.getChildNodes();
+		
+		if (classes == null)
+			return null;
+		Element iterNode, resultNode = null;
+		
+		// Element classNode = doc.createElement("class");
+		for (int i = 0; i < classes.getLength(); i++) {
+			iterNode = (Element) classes.item(i);
+			if(type == null || iterNode.getNodeName().equals(type)) {
+				if (iterNode.getAttribute(attribute).equals(name)) {
+					resultNode = iterNode;
+				}
+			}
+		}
+		return resultNode;
+	}
+
+	
+	public Element findElementByName(Element base, String type, String name) {
+		if(base == null)
+			return null;
+		
+		NodeList classes = base.getElementsByTagName(type);
+		if (classes == null)
+			return null;
+		
+		Element iterNode, resultNode = null;
+
+		// Element classNode = doc.createElement("class");
+		for (int i = 0; i < classes.getLength(); i++) {
+			iterNode = (Element) classes.item(i);
+			if (iterNode.getAttribute("name").equals(name)) {
+				resultNode = iterNode;
+			}
+		}
+		return resultNode;
+	}
+
+	public Element addParent(Element base, String name) {
+		if(base.getAttribute("name").equals("playerShipClass")) {
+			String m = "hi";
+		}
+		Element type = findElementByAttribute(docRoot, null , "name", name);
+		Element par = findElementByAttribute(base, "parent", "parentname", name);
+		if(par == null) {
+			par = doc.createElement("parent");
+			par.setAttribute("parentname", name);
+			if(type != null) {
+				par.setAttribute("parenttype", type.getNodeName());
+			}
+			base.appendChild(par);
+		}
+		return par;
+		
+	}
+	
+	public Element addClass(String name) {
+		if(name.equals("playerShipClass")) {
+			int i = 5;
+		}
+		Element classNode = findElementByName(docRoot, "class", name);
+		if (classNode == null) {
+			classNode = doc.createElement("class");
+			
+			classNode.setAttribute("name",name);
+			classNode.setAttribute("class",name);
+			docRoot.appendChild(classNode);
+		}
+		return classNode;
+	}
+	
+	public Element addGlobal(String name) {
+		Element globalNode = findElementByName(docRoot,	"global", name);
+		if (globalNode == null) {
+			globalNode = doc.createElement("global");
+			globalNode.setAttribute("name", name);
+			docRoot.appendChild(globalNode);
+		}
+		return globalNode;
+	}
+	
+	public Element addField(Element base, String name) {
+		Element fieldNode = findElementByName(base,"field", name);
+		if (fieldNode == null) {
+			fieldNode = doc.createElement("field");
+			fieldNode.setAttribute("name", name);
+			base.appendChild(fieldNode);
+		}
+		return fieldNode;
+	}
+	
+}

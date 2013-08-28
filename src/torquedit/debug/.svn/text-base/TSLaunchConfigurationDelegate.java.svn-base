@@ -1,0 +1,20 @@
+package torquedit.tseditor;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
+import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+
+
+public class TSLaunchConfigurationDelegate extends LaunchConfigurationDelegate
+		implements ILaunchConfigurationDelegate2 {
+
+	public void launch(ILaunchConfiguration configuration, String mode,
+			ILaunch launch, IProgressMonitor monitor) throws CoreException {
+		// TODO Auto-generated method stub
+		System.out.println("Program Launching...");
+	}
+
+}

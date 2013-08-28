@@ -1,0 +1,49 @@
+8
+
+dir
+0
+http://svn.kruxgames.com/opensource/branches/torquedit_0.2/src/torquedit/debug
+http://svn.kruxgames.com/opensource
+add
+
+
+
+
+
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+87eabcec-1008-0410-a9ee-a26cb53c88d5
+
+TSLaunchDelegate.java
+file
+
+
+
+add
+
+TSLaunchMainTab.java
+file
+
+
+
+add
+
+TSLaunchTabGroup.java
+file
+
+
+
+add
+

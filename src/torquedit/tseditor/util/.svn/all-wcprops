@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/opensource/!svn/ver/51/branches/torquedit_0.2/src/torquedit/tseditor/util
+END
+TSCompletionProcessor.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/opensource/!svn/ver/51/branches/torquedit_0.2/src/torquedit/tseditor/util/TSCompletionProcessor.java
+END
+TSClassesWordDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSClassesWordDetector.java
+END
+ColorProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/ColorProvider.java
+END
+CaseInsensitiveWordRule.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/CaseInsensitiveWordRule.java
+END
+TSScriptClassPatternRule.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSScriptClassPatternRule.java
+END
+TSWhiteSpaceDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSWhiteSpaceDetector.java
+END
+TSGlobalVariableWordDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSGlobalVariableWordDetector.java
+END
+TSLocalVariableWordDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSLocalVariableWordDetector.java
+END
+TSFunctionsWordDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSFunctionsWordDetector.java
+END
+TSKeywordDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSKeywordDetector.java
+END
+XmlResource.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/XmlResource.java
+END
+ResourceLoader.java
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/ResourceLoader.java
+END
+XmlResourceParser.java
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/XmlResourceParser.java
+END
+TSTextHover.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSTextHover.java
+END
+TSAutoIndentStrategy.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/util/TSAutoIndentStrategy.java
+END

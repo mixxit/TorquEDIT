@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/opensource/!svn/ver/55/branches/torquedit_0.2
+END
+.classpath
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/opensource/!svn/ver/22/branches/torquedit_0.2/.classpath
+END
+build.properties
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/opensource/!svn/ver/53/branches/torquedit_0.2/build.properties
+END
+.project
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/opensource/!svn/ver/13/branches/torquedit_0.2/.project
+END
+plugin.xml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/opensource/!svn/ver/55/branches/torquedit_0.2/plugin.xml
+END
+examples.cs
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/opensource/!svn/ver/51/branches/torquedit_0.2/examples.cs
+END

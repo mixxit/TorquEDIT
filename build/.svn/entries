@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wc-entries
+   xmlns="svn:">
+<entry
+   committed-rev="55"
+   name=""
+   committed-date="2007-05-18T23:07:50.877534Z"
+   url="http://svn.kruxgames.com/opensource/branches/torquedit_0.2/src"
+   last-author="aatherton"
+   kind="dir"
+   uuid="87eabcec-1008-0410-a9ee-a26cb53c88d5"
+   repos="http://svn.kruxgames.com/opensource"
+   revision="55"/>
+<entry
+   name="torquedit"
+   kind="dir"/>
+</wc-entries>

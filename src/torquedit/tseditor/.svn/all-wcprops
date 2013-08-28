@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/opensource/!svn/ver/55/branches/torquedit_0.2/src/torquedit/tseditor
+END
+TSViewContentProvider.java
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TSViewContentProvider.java
+END
+TSNewProjectWizard.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TSNewProjectWizard.java
+END
+TSContentOutlinePage.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TSContentOutlinePage.java
+END
+TSRuleScanner.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TSRuleScanner.java
+END
+TorqueScriptEditor.java
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TorqueScriptEditor.java
+END
+TSSourceViewerConfiguration.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TSSourceViewerConfiguration.java
+END
+TorquEDITPlugin.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/opensource/!svn/ver/53/branches/torquedit_0.2/src/torquedit/tseditor/TorquEDITPlugin.java
+END
+TSLaunchConfigurationDelegate.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/opensource/!svn/ver/55/branches/torquedit_0.2/src/torquedit/tseditor/TSLaunchConfigurationDelegate.java
+END
+TSProjectNature.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/opensource/!svn/ver/49/branches/torquedit_0.2/src/torquedit/tseditor/TSProjectNature.java
+END
+TSLaunchConfigurationTabGroup.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/opensource/!svn/ver/55/branches/torquedit_0.2/src/torquedit/tseditor/TSLaunchConfigurationTabGroup.java
+END
+TSBuilder.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/opensource/!svn/ver/51/branches/torquedit_0.2/src/torquedit/tseditor/TSBuilder.java
+END
+TSScriptBuildVisitor.java
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/opensource/!svn/ver/53/branches/torquedit_0.2/src/torquedit/tseditor/TSScriptBuildVisitor.java
+END

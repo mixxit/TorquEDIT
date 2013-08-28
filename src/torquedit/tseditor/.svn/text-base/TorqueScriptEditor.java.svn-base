@@ -1,0 +1,133 @@
+package torquedit.tseditor;
+
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.views.contentoutline.*;
+
+import torquedit.tseditor.util.ColorProvider;
+import torquedit.tseditor.util.TSCompletionProcessor;
+
+/**
+ * This is the actual editor :)
+ */
+public class TorqueScriptEditor
+	extends TextEditor {
+	private TSSourceViewerConfiguration config = null;
+	
+	private TSContentOutlinePage outline;
+	private static TorqueScriptEditor instance = null;
+	private TSCompletionProcessor completionProcessor;
+	private ColorProvider colorp = null;
+	private TSRuleScanner scanner;
+	private IProject project = null;
+	private IPropertyChangeListener preferenceListener;
+	//private boolean propertyListening;
+	/**
+	 * Creates the editor
+	 */
+	public TorqueScriptEditor() {
+		
+		super();
+
+		colorp	= new ColorProvider();
+		completionProcessor = new TSCompletionProcessor();
+		scanner = new TSRuleScanner(colorp);
+		instance = this;
+		config = new TSSourceViewerConfiguration(completionProcessor, colorp, scanner);
+		setSourceViewerConfiguration(config);
+		//propertyListening = false;
+		
+		setPreferenceStore(TorquEDITPlugin.getDefault().getCombinedPreferenceStore());
+
+		preferenceListener =
+			new IPropertyChangeListener() {
+			/*
+			 * @see IPropertyChangeListener.propertyChange()
+			 */
+			public void propertyChange(PropertyChangeEvent event) {
+				config.updateSettings(getSourceViewer(), event);
+			}
+		};
+		
+		TorquEDITPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(preferenceListener);
+		
+	}
+
+//	protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
+//		config.updateSettings(getSourceViewer(), event);
+//	}
+	
+	
+    ISelectionListener listener = new ISelectionListener() {
+        public void selectionChanged(IWorkbenchPart part, ISelection sel) {
+        	if(part == getSite().getPart()) {
+	        	if(project == null) {
+	        		if(getEditorInput() instanceof FileEditorInput ) {
+	        			FileEditorInput ei = (FileEditorInput)getEditorInput();
+	        			project = ei.getFile().getProject();
+	        			completionProcessor.setProject(project);
+	        			completionProcessor.setSourceViewer(getSourceViewer());
+	        			completionProcessor.setFilename(ei.getFile().getFullPath().toString());
+	        			scanner.setProject(project);
+	        			scanner.refreshRules();
+	        			getSourceViewer().invalidateTextPresentation();
+	        		}
+	        	}
+        	}
+        	return;
+        }
+     };
+     public void createPartControl(Composite parent) {
+    	 super.createPartControl(parent);
+        getSite().getPage().addSelectionListener(listener);
+        
+     }
+	
+	public static TorqueScriptEditor getInstance() {
+		return instance;
+	}
+	
+	/**
+	 * DIE!
+	 */
+
+	public void dispose() {
+		//and no longer listen to the preference store
+		getSite().getPage().removeSelectionListener(listener);
+//		TorquEDITPlugin
+//			.getDefault()
+//			.getPreferenceStore()
+//			.removePropertyChangeListener(preferenceListener);
+		super.dispose();
+	}
+	
+    protected boolean affectsTextPresentation(PropertyChangeEvent event) {
+        return true;
+    }
+    
+	public Object getAdapter(Class adapter) {
+		if(IContentOutlinePage.class.equals(adapter)) {
+			if(outline == null) {
+				
+				outline = new TSContentOutlinePage(getDocumentProvider());
+				if(getEditorInput() != null) {
+					outline.setInput(getEditorInput());
+				}
+				return outline;
+			}
+		}
+		return super.getAdapter(adapter);
+	}
+}
